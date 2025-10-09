@@ -1,0 +1,68 @@
+# =========================
+# .gitignore for root + frontend only
+# Ignored items focus on: OS artifacts, root secrets, IDE files, Docker overrides, and frontend (Vite/Node) build files
+# =========================
+
+# ----- Operating system files -----
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ----- Root environment / secrets -----
+# Ignore environment files at repo root
+.env
+.env.local
+.env.*
+!.env.example
+
+# ----- Docker / local override -----
+docker-compose.override.yml
+docker-compose.*.local.yml
+
+# ----- Logs -----
+logs/
+*.log
+
+# ----- IDEs and editors -----
+.vscode/
+.idea/
+*.suo
+*.swp
+*.swo
+*.tmp
+*.bak
+*.orig
+*~
+
+# ----- Frontend (Vite / Node) -----
+# Node modules for frontend only
+/frontend/node_modules/
+
+# Build / cache artifacts for frontend
+/frontend/dist/
+/frontend/.vite/
+/frontend/.cache/
+/frontend/.sass-cache/
+
+# Frontend environment files
+/frontend/.env
+/frontend/.env.local
+/frontend/.env.*
+!/frontend/.env.example
+
+# Optional debug logs
+/frontend/npm-debug.log*
+/frontend/yarn-debug.log*
+/frontend/yarn-error.log*
+/frontend/pnpm-debug.log*
+
+# ----- Misc -----
+.cache/
+.history/
+
+# End of file
+
+/.venv/
+Thumbs.db
+
+# End of file

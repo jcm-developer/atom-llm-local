@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Logo estilo átomo con degradados azules y morados</title>
+  <desc id="desc">Átomo minimalista con tres órbitas elípticas, núcleo central y electrones, usando degradados azul, lila y morado.</desc>
+
+  <style>
+    :root {
+      --c1:#A3A1FF; /* lila claro */
+      --c2:#6A5ACD; /* azul violeta */
+      --c3:#3A0CA3; /* morado profundo */
+      --stroke:28;
+      --dot:12;
+    }
+  </style>
+
+  <defs>
+    <linearGradient id="orbitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"  stop-color="var(--c1)"/>
+      <stop offset="60%" stop-color="var(--c2)"/>
+      <stop offset="100%" stop-color="var(--c3)"/>
+    </linearGradient>
+
+    <radialGradient id="coreGrad" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="var(--c1)" />
+      <stop offset="55%" stop-color="var(--c2)" />
+      <stop offset="100%" stop-color="var(--c3)" />
+    </radialGradient>
+
+    <style>
+      .orbit {
+        fill: none;
+        stroke: url(#orbitGrad);
+        stroke-width: var(--stroke);
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .electron {
+        fill: url(#orbitGrad);
+      }
+      .core {
+        fill: url(#coreGrad);
+      }
+    </style>
+  </defs>
+
+  <circle class="core" cx="256" cy="256" r="46"/>
+
+  <g transform="translate(256,256)">
+    <ellipse class="orbit" rx="160" ry="96" transform="rotate(0)"/>
+    <ellipse class="orbit" rx="160" ry="96" transform="rotate(60)"/>
+    <ellipse class="orbit" rx="160" ry="96" transform="rotate(-60)"/>
+  </g>
+
+  <circle class="electron" cx="256" cy="160" r="var(--dot)"/>
+  <circle class="electron" cx="365" cy="292" r="var(--dot)"/>
+  <circle class="electron" cx="147" cy="292" r="var(--dot)"/>
+
+</svg>
