@@ -151,7 +151,3 @@ If your gateway uses different field names, adjust the call in `frontend/src/vie
 
 - If you need to change the API key or URL without rebuilding the Docker image (runtime env), I can add an entrypoint that generates a small `config.js` from environment variables and copies it to `usr/share/nginx/html` before starting nginx. Let me know if you want me to implement this. 🛠️
 - For development inside Docker (hot-reload) I can add a `frontend-dev` service in `docker-compose.yml` that mounts the code and runs `npm run dev`. 🔄
-
----
-
-If you want, I can adapt the README with exact examples of payloads that your Anything LLM expects (for example the JSON shape: { message, contents, etc. }) if you provide the API specification or a response example. 📚
