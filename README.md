@@ -1,94 +1,94 @@
-# Atom LLM Local — guía actualizada
+# 🤖 Atom LLM Local — Updated Guide
 
-Estado del repositorio
-- En este repositorio el único componente en código es el frontend (carpeta `frontend/`).
-- No hay un "backend" propio en el repo. El flujo esperado es:
-  Frontend (esta app) -> Anything LLM (gateway) -> LM Studio (servicio de inferencia)
+## 📂 Repository Status
+- This repository contains only the frontend component (folder `frontend/`) 🎨
+- There's no proprietary "backend" in the repo. The expected flow is:
+  Frontend (this app) -> Anything LLM (gateway) -> LM Studio (inference service) 🔄
 
-Esta guía explica cómo arrancar el frontend (Docker o modo desarrollo) y cómo configurar Anything LLM / LM Studio como backend externo.
+This guide explains how to start the frontend (Docker or development mode) and how to configure Anything LLM / LM Studio as external backend.
 
-## Índice
-- Requisitos
-- Resumen del flujo
-- Paso a paso: LM Studio + Anything LLM + Frontend
-- Ejecutar el frontend (Docker o dev)
-- Variables de entorno y comportamiento de Vite
-- Payload de ejemplo y pruebas
-- Opciones avanzadas (runtime env, dev in-docker)
-
----
-
-## Requisitos
-
-- Docker (opcional) — para construir/servir el frontend en un contenedor nginx
-- Node.js (v20+) y npm — para ejecutar el frontend en modo desarrollo o para construir localmente
-- Una instancia de Anything LLM (gateway) accesible por la app (local o remota)
-- Una instancia de LM Studio que Anything LLM pueda usar como backend de inferencia (local o remota)
+## 📋 Table of Contents
+- 📋 Requirements
+- 🔄 Flow Summary
+- 📝 Step by Step: LM Studio + Anything LLM + Frontend
+- 🚀 Running the Frontend (Docker or dev)
+- 🌍 Environment Variables and Vite Behavior
+- 📦 Example Payload and Testing
+- ⚙️ Advanced Options (runtime env, dev in-docker)
 
 ---
 
-## Resumen del flujo
+## 📋 Requirements
 
-1. Asegúrate de que LM Studio ejecuta el modelo de inferencia que necesitas (anota su endpoint y credenciales si aplica).
-2. Configura Anything LLM para usar LM Studio como su backend de inferencia (o registra el endpoint/modelo en Anything LLM según su guía).
-3. Verifica que Anything LLM expone una API usable por clientes (URL y API key).
-4. Configura el frontend con la API key / URL de Anything LLM y arranca el frontend (Docker o dev).
+- 🐳 Docker (optional) — to build/serve the frontend in an nginx container
+- 📦 Node.js (v20+) and npm — to run the frontend in development mode or build locally
+- 🌐 An Anything LLM instance (gateway) accessible by the app (local or remote)
+- 🖥️ An LM Studio instance that Anything LLM can use as inference backend (local or remote)
 
 ---
 
-## Paso a paso
+## 🔄 Flow Summary
 
-### 1) Ejecutar LM Studio (modelo)
+1. 🚀 Ensure LM Studio is running the inference model you need (note its endpoint and credentials if applicable).
+2. ⚙️ Configure Anything LLM to use LM Studio as its inference backend (or register the endpoint/model in Anything LLM according to its guide).
+3. ✅ Verify that Anything LLM exposes an API usable by clients (URL and API key).
+4. 🎯 Configure the frontend with the API key / URL from Anything LLM and start the frontend (Docker or dev).
 
-- Inicia tu instancia de LM Studio y carga el modelo que quieras usar. Anota la URL y el puerto de inferencia (ej. `http://localhost:8080`) y cualquier credencial necesaria.
+---
 
-### 2) Configurar Anything LLM (gateway)
+## 📝 Step by Step
 
-- En la UI o configuración de Anything LLM registra el endpoint de LM Studio como backend del modelo (o configura el adaptador apropiado). Asegúrate de que Anything LLM puede enviar solicitudes de inferencia a LM Studio.
-- Anota la URL donde Anything LLM expone su API y la API key (si aplica). Ejemplo conceptual de URL: `http://localhost:3001`.
+### 1) 🚀 Run LM Studio (model)
 
-### 3) Probar Anything LLM
+- Start your LM Studio instance and load the model you want to use. Note the URL and inference port (e.g. `http://localhost:8080`) and any necessary credentials.
 
-Prueba el endpoint de Anything LLM con curl o Postman para validar que responde correctamente. Ejemplo (ajusta según tu gateway):
+### 2) ⚙️ Configure Anything LLM (gateway)
+
+- In the Anything LLM UI or configuration, register the LM Studio endpoint as the model backend (or configure the appropriate adapter). Make sure Anything LLM can send inference requests to LM Studio.
+- Note the URL where Anything LLM exposes its API and the API key (if applicable). Conceptual URL example: `http://localhost:3001`.
+
+### 3) 🧪 Test Anything LLM
+
+Test the Anything LLM endpoint with curl or Postman to validate it responds correctly. Example (adjust according to your gateway):
 
 ```bash
 curl -X POST 'http://localhost:3001/api/v1/workspace/rag/chat' \
   -H 'Authorization: Bearer YOUR_ANYTHING_API_KEY' \
   -H 'Content-Type: application/json' \
-  -d '{"message":"Hola"}'
+  -d '{"message":"Hello"}'
 ```
 
-Si recibes respuesta (JSON), Anything LLM está listo.
+If you receive a response (JSON), Anything LLM is ready. ✅
 
-### 4) Configurar y arrancar el frontend
+### 4) ⚙️ Configure and Start the Frontend
 
-- En `frontend/.env` añade la API key que el frontend usará para autenticar contra Anything LLM (ejemplo):
+- In `frontend/.env` add the API key that the frontend will use to authenticate against Anything LLM (example):
 
 ```
 VITE_ANYTHING_LLM_API_KEY=your_anything_api_key_here
 VITE_ANYTHING_LLM_URL=http://localhost:3001
 ```
 
-- Arrancar el frontend (opciones en la siguiente sección).
+- Start the frontend (options in the next section). 🚀
 
 ---
 
-## Ejecutar el frontend
+## 🚀 Running the Frontend
 
-Opciones disponibles:
+Available options:
 
-- Opción 1 — Docker (build estático y servir con nginx):
+- **Option 1** — 🐳 Docker (static build and serve with nginx):
 
-  1. Asegúrate de tener `frontend/.env` con `VITE_ANYTHING_LLM_API_KEY` si quieres que esa clave quede embebida en el build.
-  2. Desde la raíz del repo:
+  1. Make sure you have `frontend/.env` with `VITE_ANYTHING_LLM_API_KEY` if you want that key embedded in the build.
+  2. From the repo root:
 
   ```powershell
   docker compose up -d --build frontend
   ```
 
-  3. Abre http://localhost:3000
+  3. Open http://localhost:3000 🌐
 
-- Opción 2 — Desarrollo local (hot-reload, sin Docker):
+- **Option 2** — 💻 Local Development (hot-reload, without Docker):
 
   ```powershell
   cd frontend
@@ -96,62 +96,62 @@ Opciones disponibles:
   npm run dev -- --host
   ```
 
-  La salida de Vite mostrará la URL local (por defecto `http://localhost:5173`) — con `--host` también será accesible desde otras máquinas en la red.
+  Vite's output will show the local URL (default `http://localhost:5173`) — with `--host` it will also be accessible from other machines on the network. 🌍
 
 ---
 
-## Variables de entorno relevantes
+## 🌍 Relevant Environment Variables
 
-- `VITE_ANYTHING_LLM_API_KEY` — clave que el frontend enviará en el header `Authorization: Bearer ...` hacia Anything LLM. Debe colocarse en `frontend/.env` antes de construir cuando uses Docker.
-- `VITE_ANYTHING_LLM_URL` — (opcional) URL base del gateway Anything LLM (por defecto el frontend hace fetch a `http://localhost:3001/api/v1/workspace/rag/chat` en el código actual). Si cambias la URL, actualiza el código o define esta variable y lee `import.meta.env.VITE_ANYTHING_LLM_URL` en el frontend.
+- `VITE_ANYTHING_LLM_API_KEY` — key that the frontend will send in the `Authorization: Bearer ...` header to Anything LLM. Must be placed in `frontend/.env` before building when using Docker.
+- `VITE_ANYTHING_LLM_URL` — (optional) Base URL of the Anything LLM gateway (by default the frontend fetches to `http://localhost:3001/api/v1/workspace/rag/chat` in the current code). If you change the URL, update the code or define this variable and read `import.meta.env.VITE_ANYTHING_LLM_URL` in the frontend.
 
-Nota: Vite inyecta variables `VITE_*` en build time. Si construyes la imagen Docker con `npm run build`, las variables deben existir antes del build para quedar embebidas en los assets. Si necesitas cambiarlas sin rebuild, usa la sección "Opciones avanzadas".
+**Note:** Vite injects `VITE_*` variables at build time. If you build the Docker image with `npm run build`, the variables must exist before the build to be embedded in the assets. If you need to change them without rebuild, use the "Advanced Options" section. ⚠️
 
 ---
 
-## Payload de ejemplo (qué envía el frontend)
+## 📦 Example Payload (what the frontend sends)
 
-El frontend, en el archivo `frontend/src/views/Home.vue`, envía una petición POST JSON al gateway con el siguiente shape (actual):
+The frontend, in the file `frontend/src/views/Home.vue`, sends a POST JSON request to the gateway with the following shape (current):
 
-Request:
+**Request:**
 
-- URL (ejemplo): `http://localhost:3001/api/v1/workspace/rag/chat`
+- URL (example): `http://localhost:3001/api/v1/workspace/rag/chat`
 - Headers:
   - `Authorization: Bearer <VITE_ANYTHING_LLM_API_KEY>`
   - `Content-Type: application/json`
 - Body (JSON):
 
 ```json
-{ "message": "texto del usuario" }
+{ "message": "user text" }
 ```
 
-Respuesta esperada (ejemplo):
+**Expected Response (example):**
 
 ```json
 {
-  "textResponse": "Respuesta generada por el modelo"
+  "textResponse": "Response generated by the model"
 }
 ```
 
-Si tu gateway usa nombres de campos diferentes, ajusta la llamada en `frontend/src/views/Home.vue` para mapear la respuesta apropiadamente.
+If your gateway uses different field names, adjust the call in `frontend/src/views/Home.vue` to map the response appropriately. 🔧
 
 ---
 
-## Depuración rápida
+## 🔍 Quick Debugging
 
-- Verifica LM Studio (modelo) responde en su endpoint antes de configurar Anything LLM.
-- Verifica Anything LLM con curl/Postman usando la API key.
-- Errores comunes:
-  - `process is not defined` — usa `import.meta.env.VITE_*` en el frontend y define las variables en `frontend/.env` antes del build.
-  - `Cannot read properties of null` — elementos comentados o ausentes en la plantilla; revisa `frontend/src/views/Home.vue`.
-
----
-
-## Opciones avanzadas
-
-- Si necesitas cambiar la API key o URL sin reconstruir la imagen Docker (runtime env), puedo añadir un entrypoint que genere un pequeño `config.js` a partir de variables de entorno y lo copie en `usr/share/nginx/html` antes de arrancar nginx. Dime si lo implemento.
-- Para desarrollo dentro de Docker (hot-reload) puedo añadir un servicio `frontend-dev` en `docker-compose.yml` que monte el código y ejecute `npm run dev`.
+- ✅ Verify LM Studio (model) responds at its endpoint before configuring Anything LLM.
+- ✅ Verify Anything LLM with curl/Postman using the API key.
+- Common errors:
+  - `process is not defined` — use `import.meta.env.VITE_*` in the frontend and define the variables in `frontend/.env` before build.
+  - `Cannot read properties of null` — commented or missing elements in the template; check `frontend/src/views/Home.vue`.
 
 ---
 
-Si quieres, adapto el README con ejemplos exactos de payloads que espera tu Anything LLM (por ejemplo el shape JSON: { message, contents, etc. }) si me pasas la especificación del API o un ejemplo de respuesta.
+## ⚙️ Advanced Options
+
+- If you need to change the API key or URL without rebuilding the Docker image (runtime env), I can add an entrypoint that generates a small `config.js` from environment variables and copies it to `usr/share/nginx/html` before starting nginx. Let me know if you want me to implement this. 🛠️
+- For development inside Docker (hot-reload) I can add a `frontend-dev` service in `docker-compose.yml` that mounts the code and runs `npm run dev`. 🔄
+
+---
+
+If you want, I can adapt the README with exact examples of payloads that your Anything LLM expects (for example the JSON shape: { message, contents, etc. }) if you provide the API specification or a response example. 📚
