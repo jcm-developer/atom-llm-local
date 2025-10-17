@@ -43,17 +43,11 @@
                 <form action="#" class="prompt-form">
                     <input type="text" placeholder="Pregúntame algo..." class="prompt-input" required />
                     <div class="prompt-actions">
-                        <!-- File Upload Wrapper (comentado) -->
-                        <!--
-                        <div class="file-upload-wrapper">
-                            <img src="#" class="file-preview">
-                            <input type="file" accept="image/*, .pdf, .txt, .csv," id="file-input" hidden>
-                            <button type="button" class="file-icon material-symbols-outlined">description</button>
-                            <button id="add-file-btn" type="button"
-                                class="material-symbols-outlined">attach_file</button>
-                            <button id="cancel-file-btn" type="button" class="material-symbols-outlined">close</button>
-                        </div>
-                        -->
+                        <!-- Model Toggle Button -->
+                        <button type="button" id="model-toggle-btn" class="model-toggle-btn"
+                            title="Cambiar entre ChatGPT y Modelo Local">
+                            <span class="material-symbols-outlined">public</span>
+                        </button>
 
                         <button type="button" id="stop-response-btn"
                             class="material-symbols-outlined">stop_circle</button>
@@ -77,13 +71,13 @@ let container = null
 let chatsContainer = null
 let promptForm = null
 let promptInput = null
-let fileInput = null
-let fileUploadWrapper = null
 let themeToggle = null
+let modelToggleBtn = null
 
 let typingInterval, controller
 const chatHistory = []
-const userData = { message: "", file: {} }
+const userData = { message: "" }
+const isUsingChatGPT = ref(false) // false = Local Model, true = ChatGPT
 
 // Function to create message elements
 const createMsgElement = (content, ...classes) => {
@@ -120,42 +114,72 @@ const generateResponse = async (botMsgDiv) => {
     const textElement = botMsgDiv.querySelector(".message-text")
     controller = new AbortController()
 
-    // Add user message and file data to the chat history
+    // Add user message to the chat history
     chatHistory.push({
         role: "user",
-        parts: [{ text: userData.message }, ...(userData.file.data ? [{ inline_data: (({ fileName, isImage, ...rest }) => rest)(userData.file) }] : [])]
+        parts: [{ text: userData.message }]
     })
 
     try {
-        // Send the chat history to the API to get a response
-        const response = await fetch(`${import.meta.env.VITE_ANYTHING_LLM_URL}/api/v1/workspace/rag/chat`, {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${import.meta.env.VITE_ANYTHING_LLM_API_KEY}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ message: userData.message, rules: "Answer always in the user language" }),
-            signal: controller.signal
-        })
+        let response, data
 
-        const data = await response.json()
-        if (!response.ok) throw new Error(data.error.message)
+        if (isUsingChatGPT.value) {
+            // Use ChatGPT API
+            response = await fetch(`https://api.openai.com/v1/chat/completions`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    model: "gpt-3.5-turbo",
+                    messages: [
+                        { role: "system", content: "Answer always in the user language" },
+                        { role: "user", content: userData.message }
+                    ]
+                }),
+                signal: controller.signal
+            })
 
-        // Process the response text and display with typing effect
-        const textResponse = data.textResponse.replace(/\*\*([^*]+)\*\*/g, "$1").trim()
-        typingEffect(textResponse, textElement, botMsgDiv)
+            data = await response.json()
+            if (!response.ok) throw new Error(data.error?.message || "Error en la API de ChatGPT")
 
-        chatHistory.push({
-            role: "model",
-            parts: [{ text: textResponse }]
-        })
+            const textResponse = data.choices[0].message.content.trim()
+            typingEffect(textResponse, textElement, botMsgDiv)
+
+            chatHistory.push({
+                role: "model",
+                parts: [{ text: textResponse }]
+            })
+        } else {
+            // Use Local Model (Anything LLM)
+            response = await fetch(`${import.meta.env.VITE_ANYTHING_LLM_URL}/api/v1/workspace/rag/chat`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${import.meta.env.VITE_ANYTHING_LLM_API_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ message: userData.message, rules: "Answer always in the user language" }),
+                signal: controller.signal
+            })
+
+            data = await response.json()
+            if (!response.ok) throw new Error(data.error.message)
+
+            // Process the response text and display with typing effect
+            const textResponse = data.textResponse.replace(/\*\*([^*]+)\*\*/g, "$1").trim()
+            typingEffect(textResponse, textElement, botMsgDiv)
+
+            chatHistory.push({
+                role: "model",
+                parts: [{ text: textResponse }]
+            })
+        }
     } catch (error) {
         textElement.style.color = "#d62939"
         textElement.textContent = error.name === "AbortError" ? "Response generation stopped." : error.message
         botMsgDiv.classList.remove("loading")
         document.body.classList.remove("bot-responding")
-    } finally {
-        userData.file = {}
     }
 }
 
@@ -168,16 +192,9 @@ const handleFormSubmit = (e) => {
     promptInput.value = ""
     userData.message = userMessage
     document.body.classList.add("bot-responding", "chats-active")
-    // fileUploadWrapper may be disabled/commented out in the template — guard against null
-    if (fileUploadWrapper) fileUploadWrapper.classList.remove("active", "img-attached", "file-attached")
 
-    // Generate user message HTML with optional file attachment
-    const userMsgHTML = `
-        <p class="message-text"></p>
-        ${userData.file.data ? (userData.file.isImage ? `<img src="data:${userData.file.mime_type};base64,
-        ${userData.file.data}" class="img-attachment" />` : `<p class="file-attachment">
-        <span class="material-symbols-outlined">description</span>${userData.file.fileName}</p>`) : ""}
-    `
+    // Generate user message HTML
+    const userMsgHTML = `<p class="message-text"></p>`
     const userMsgDiv = createMsgElement(userMsgHTML, "user-message")
 
     userMsgDiv.querySelector(".message-text").textContent = userMessage
@@ -199,40 +216,19 @@ onMounted(() => {
     chatsContainer = document.querySelector(".chats-container")
     promptForm = document.querySelector(".prompt-form")
     promptInput = document.querySelector(".prompt-input")
-    // file input / wrapper are disabled (commented out in template)
-    // fileInput = document.querySelector("#file-input")
-    // fileUploadWrapper = document.querySelector(".file-upload-wrapper")
     themeToggle = document.querySelector("#theme-toggle-btn")
+    modelToggleBtn = document.querySelector("#model-toggle-btn")
 
-    // Handle file input change (file upload) - disabled
-    // fileInput.addEventListener("change", () => {
-    //     const file = fileInput.files[0]
-    //     if (!file) return
-
-    //     const isImage = file.type.startsWith("image/")
-    //     const reader = new FileReader()
-    //     reader.readAsDataURL(file)
-
-    //     reader.onload = (e) => {
-    //         fileInput.value = ""
-    //         const base64string = e.target.result.split(",")[1]
-    //         fileUploadWrapper.querySelector(".file-preview").src = e.target.result
-    //         fileUploadWrapper.classList.add("active", isImage ? "img-attached" : "file-attached")
-
-    //         // Store file data in userData obj
-    //         userData.file = { fileName: file.name, data: base64string, mime_type: file.type, isImage }
-    //     }
-    // })
-
-    // Cancel file upload (disabled)
-    // document.querySelector("#cancel-file-btn").addEventListener("click", () => {
-    //     userData.file = {}
-    //     fileUploadWrapper.classList.remove("active", "img-attached", "file-attached")
-    // })
+    // Toggle between ChatGPT and Local Model
+    modelToggleBtn.addEventListener("click", () => {
+        isUsingChatGPT.value = !isUsingChatGPT.value
+        modelToggleBtn.classList.toggle("active", isUsingChatGPT.value)
+        modelToggleBtn.querySelector("span").textContent = isUsingChatGPT.value ? "cloud" : "computer"
+        modelToggleBtn.title = isUsingChatGPT.value ? "ChatGPT (Abierto)" : "Modelo Local (Privado)"
+    })
 
     // Stop ongoing bot response
     document.querySelector("#stop-response-btn").addEventListener("click", () => {
-        userData.file = {}
         controller?.abort()
         clearInterval(typingInterval)
         // The loading bot element may not exist — guard before calling classList
@@ -259,7 +255,7 @@ onMounted(() => {
     // Show/hide controls for mobile on prompt input focus
     document.addEventListener("click", ({ target }) => {
         const wrapper = document.querySelector(".prompt-wrapper")
-        const shouldHide = target.classList.contains("prompt-input") || (wrapper.classList.contains("hide-controls") && (target.id === "add-file-btn" || target.id === "stop-response-btn"))
+        const shouldHide = target.classList.contains("prompt-input") || (wrapper.classList.contains("hide-controls") && target.id === "stop-response-btn")
         wrapper.classList.toggle("hide-controls", shouldHide)
     })
 
@@ -276,7 +272,5 @@ onMounted(() => {
     themeToggle.textContent = isLightTheme ? "dark_mode" : "light_mode"
 
     promptForm.addEventListener("submit", handleFormSubmit)
-    // add-file button behavior disabled until file-upload is re-enabled
-    // promptForm.querySelector("#add-file-btn").addEventListener("click", () => fileInput.click())
 })
 </script>
