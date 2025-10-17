@@ -46,7 +46,7 @@
                         <!-- Model Toggle Button -->
                         <button type="button" id="model-toggle-btn" class="model-toggle-btn"
                             title="Cambiar entre ChatGPT y Modelo Local">
-                            <span class="material-symbols-outlined">public</span>
+                            <span class="material-symbols-outlined">computer</span>
                         </button>
 
                         <button type="button" id="stop-response-btn"

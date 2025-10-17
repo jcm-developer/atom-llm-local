@@ -104,8 +104,28 @@ Available options:
 
 - `VITE_ANYTHING_LLM_API_KEY` — key that the frontend will send in the `Authorization: Bearer ...` header to Anything LLM. Must be placed in `frontend/.env` before building when using Docker.
 - `VITE_ANYTHING_LLM_URL` — (optional) Base URL of the Anything LLM gateway (by default the frontend fetches to `http://localhost:3001/api/v1/workspace/rag/chat` in the current code). If you change the URL, update the code or define this variable and read `import.meta.env.VITE_ANYTHING_LLM_URL` in the frontend.
+- `VITE_OPENAI_API_KEY` — 🆕 OpenAI API key to use ChatGPT as an alternative model. Required only if you want to use the ChatGPT toggle button.
 
 **Note:** Vite injects `VITE_*` variables at build time. If you build the Docker image with `npm run build`, the variables must exist before the build to be embedded in the assets. If you need to change them without rebuild, use the "Advanced Options" section. ⚠️
+
+---
+
+## 🔄 Model Toggle Feature
+
+The frontend now includes a **model toggle button** that allows you to switch between:
+- 🌐 **ChatGPT (Open Model)**: Uses OpenAI's API for responses
+- 💻 **Local Model (Private)**: Uses your local Anything LLM + LM Studio setup with file support
+
+**How to use:**
+1. Click the cloud icon (☁️) button in the prompt area to toggle between models
+2. When **active** (blue gradient): Using ChatGPT API
+3. When **inactive** (glass effect): Using Local Model
+4. The icon changes to reflect the current model (cloud ☁️ for ChatGPT, computer 💻 for local)
+
+**Configuration:**
+- Copy `frontend/.env.example` to `frontend/.env`
+- Add your `VITE_OPENAI_API_KEY` to enable ChatGPT functionality
+- The local model configuration remains unchanged
 
 ---
 
