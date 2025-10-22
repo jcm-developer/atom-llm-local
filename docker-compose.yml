@@ -1,9 +1,13 @@
 services:
-  frontend:
+  backend:
     build:
-      context: ./frontend
+      context: ./backend
       dockerfile: Dockerfile
-    container_name: atom
+    container_name: backend
     ports:
-      - "3000:80"
+      - "8000:8000"
+    env_file:
+      - ./.env
+    volumes:
+      - ./backend:/app
     restart: unless-stopped
