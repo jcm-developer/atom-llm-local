@@ -7,11 +7,11 @@ from reportlab.lib.enums import TA_JUSTIFY
 
 def generate_pdf(filepath, content):
     """
-    Genera un PDF con contenido completo y formateado.
+    Generates a PDF with complete and formatted content.
     
     Args:
-        filepath: Ruta donde se guardará el PDF
-        content: Texto completo que se incluirá en el PDF
+        filepath: Path where the PDF will be saved
+        content: Full text to be included in the PDF
     """
     doc = SimpleDocTemplate(
         str(filepath),

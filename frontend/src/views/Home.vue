@@ -142,39 +142,217 @@ const generateResponse = async (botMsgDiv) => {
             throw new Error(data.error || "Error en el backend")
         }
 
-        console.log('🔍 [Frontend] Tipo de respuesta:', data.type)
+        console.log('🔍 [Frontend] Response type:', data.type)
+
+        if (data.type === 'image' && data.imageData) {
+            console.log('🖼️ [Frontend] Image detected!')
+            console.log('📄 [Frontend] Filename:', data.filename)
+
+            // Create container with relative position for absolute button
+            const imageContainer = document.createElement('div')
+            imageContainer.style.position = 'relative'
+            imageContainer.style.display = 'inline-block'
+            imageContainer.style.maxWidth = '100%'
+            imageContainer.style.marginTop = '10px'
+
+            // Create image element
+            const imgElement = document.createElement('img')
+            imgElement.src = data.imageData
+            imgElement.alt = data.filename
+            imgElement.style.maxWidth = '90%'
+            imgElement.style.borderRadius = '12px'
+            imgElement.style.cursor = 'pointer'
+            imgElement.style.display = 'block'
+            imgElement.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)'
+            imgElement.style.transition = 'transform 0.3s ease'
+
+            // Hover effect
+            imgElement.onmouseover = () => {
+                imgElement.style.transform = 'scale(1.02)'
+            }
+            imgElement.onmouseout = () => {
+                imgElement.style.transform = 'scale(1)'
+            }
+
+            // Create styled download button positioned in the corner
+            const downloadBtn = document.createElement('a')
+            downloadBtn.href = data.imageData
+            downloadBtn.download = data.filename
+            downloadBtn.innerHTML = '<span class="material-symbols-outlined" style="margin-right: 8px;">download</span>Download chart'
+            downloadBtn.style.position = 'absolute'
+            downloadBtn.style.bottom = '16px'
+            downloadBtn.style.left = '16px'
+            downloadBtn.style.display = 'inline-flex'
+            downloadBtn.style.alignItems = 'center'
+            downloadBtn.style.justifyContent = 'center'
+            downloadBtn.style.padding = '12px 24px'
+            downloadBtn.style.background = 'linear-gradient(135deg, #1d7efd 0%, #8f6fff 100%)'
+            downloadBtn.style.color = 'white'
+            downloadBtn.style.borderRadius = '8px'
+            downloadBtn.style.textDecoration = 'none'
+            downloadBtn.style.fontSize = '14px'
+            downloadBtn.style.fontWeight = '600'
+            downloadBtn.style.cursor = 'pointer'
+            downloadBtn.style.transition = 'all 0.3s ease'
+            downloadBtn.style.boxShadow = '0 4px 12px rgba(29, 126, 253, 0.3)'
+
+            // Button hover effect
+            downloadBtn.onmouseover = () => {
+                downloadBtn.style.transform = 'translateY(-2px)'
+                downloadBtn.style.boxShadow = '0 6px 16px rgba(29, 126, 253, 0.4)'
+                downloadBtn.style.background = 'linear-gradient(135deg, #0264e3 0%, #7a5ae8 100%)'
+            }
+            downloadBtn.onmouseout = () => {
+                downloadBtn.style.transform = 'translateY(0)'
+                downloadBtn.style.boxShadow = '0 4px 12px rgba(29, 126, 253, 0.3)'
+                downloadBtn.style.background = 'linear-gradient(135deg, #1d7efd 0%, #8f6fff 100%)'
+            }
+
+            // Function to create full view modal
+            const createImageModal = () => {
+                // Create overlay
+                const modal = document.createElement('div')
+                modal.style.position = 'fixed'
+                modal.style.top = '0'
+                modal.style.left = '0'
+                modal.style.width = '100%'
+                modal.style.height = '100%'
+                modal.style.backgroundColor = 'rgba(0, 0, 0, 0.9)'
+                modal.style.display = 'flex'
+                modal.style.alignItems = 'center'
+                modal.style.justifyContent = 'center'
+                modal.style.zIndex = '10000'
+                modal.style.cursor = 'pointer'
+                modal.style.animation = 'fadeIn 0.3s ease'
+
+                // Create image in modal
+                const modalImg = document.createElement('img')
+                modalImg.src = data.imageData
+                modalImg.alt = data.filename
+                modalImg.style.maxWidth = '75%'
+                modalImg.style.maxHeight = '75%'
+                modalImg.style.borderRadius = '12px'
+                modalImg.style.boxShadow = '0 8px 32px rgba(0,0,0,0.5)'
+                modalImg.style.cursor = 'default'
+                modalImg.style.animation = 'zoomIn 0.3s ease'
+
+                // Close when clicking background
+                modal.onclick = (e) => {
+                    if (e.target === modal) {
+                        modal.style.animation = 'fadeOut 0.3s ease'
+                        setTimeout(() => modal.remove(), 300)
+                    }
+                }
+
+                // Prevent image click from closing modal
+                modalImg.onclick = (e) => {
+                    e.stopPropagation()
+                }
+
+                modal.appendChild(modalImg)
+                document.body.appendChild(modal)
+            }
+
+            // Click on image to view full size
+            imgElement.onclick = createImageModal
+
+            // Assemble elements
+            imageContainer.appendChild(imgElement)
+            imageContainer.appendChild(downloadBtn)
+
+            // Clear text and add container
+            textElement.textContent = ''
+            botMsgDiv.appendChild(imageContainer)
+
+            botMsgDiv.classList.remove("loading")
+            document.body.classList.remove("bot-responding")
+            scrollToBottom()
+
+            chatHistory.push({
+                role: "assistant",
+                parts: [{ text: '✅ Chart generated', image: data.imageData }]
+            })
+            return
+        }
 
         if (data.type === 'file' && data.url) {
-            console.log('📄 [Frontend] ¡Archivo detectado!')
+            console.log('📄 [Frontend] File detected!')
             console.log('📄 [Frontend] Filename:', data.filename)
             console.log('📄 [Frontend] URL:', data.url)
 
             const filename = data.filename || 'download.pdf'
             const downloadUrl = data.url
 
-            console.log('🔗 [Frontend] Creando enlace de descarga...')
-            const link = document.createElement('a')
-            link.href = downloadUrl
-            link.download = filename
-            link.target = '_blank'
-            document.body.appendChild(link)
-            console.log('👆 [Frontend] Haciendo click en el enlace...')
-            link.click()
-            console.log('🗑️ [Frontend] Eliminando enlace del DOM...')
-            document.body.removeChild(link)
-            console.log('✅ [Frontend] Descarga iniciada!')
+            // Create container for message and button
+            const pdfContainer = document.createElement('div')
+            pdfContainer.style.display = 'flex'
+            pdfContainer.style.flexDirection = 'column'
+            pdfContainer.style.gap = '12px'
+            pdfContainer.style.marginTop = '10px'
 
-            const successMessage = '✅ PDF Generado!'
-            typingEffect(successMessage, textElement, botMsgDiv)
+            // Create text message
+            const messageText = document.createElement('p')
+            messageText.textContent = 'Here is your PDF'
+            messageText.style.margin = '0'
+            messageText.style.fontSize = '15px'
+            messageText.style.fontWeight = '500'
+            messageText.style.color = 'var(--text-color)'
+
+            // Create styled download button
+            const downloadButton = document.createElement('a')
+            downloadButton.href = downloadUrl
+            downloadButton.download = filename
+            downloadButton.target = '_blank'
+            downloadButton.innerHTML = '<span class="material-symbols-outlined" style="margin-right: 8px;">download</span>Download PDF'
+            downloadButton.style.display = 'inline-flex'
+            downloadButton.style.alignItems = 'center'
+            downloadButton.style.justifyContent = 'center'
+            downloadButton.style.padding = '12px 24px'
+            downloadButton.style.background = 'linear-gradient(135deg, #1d7efd 0%, #8f6fff 100%)'
+            downloadButton.style.color = 'white'
+            downloadButton.style.borderRadius = '8px'
+            downloadButton.style.textDecoration = 'none'
+            downloadButton.style.fontSize = '14px'
+            downloadButton.style.fontWeight = '600'
+            downloadButton.style.cursor = 'pointer'
+            downloadButton.style.transition = 'all 0.3s ease'
+            downloadButton.style.boxShadow = '0 4px 12px rgba(29, 126, 253, 0.3)'
+            downloadButton.style.width = 'fit-content'
+
+            // Button hover effect
+            downloadButton.onmouseover = () => {
+                downloadButton.style.transform = 'translateY(-2px)'
+                downloadButton.style.boxShadow = '0 6px 16px rgba(29, 126, 253, 0.4)'
+                downloadButton.style.background = 'linear-gradient(135deg, #0264e3 0%, #7a5ae8 100%)'
+            }
+            downloadButton.onmouseout = () => {
+                downloadButton.style.transform = 'translateY(0)'
+                downloadButton.style.boxShadow = '0 4px 12px rgba(29, 126, 253, 0.3)'
+                downloadButton.style.background = 'linear-gradient(135deg, #1d7efd 0%, #8f6fff 100%)'
+            }
+
+            // Assemble elements
+            pdfContainer.appendChild(messageText)
+            pdfContainer.appendChild(downloadButton)
+
+            // Clear text and add container
+            textElement.textContent = ''
+            botMsgDiv.appendChild(pdfContainer)
+
+            botMsgDiv.classList.remove("loading")
+            document.body.classList.remove("bot-responding")
+            scrollToBottom()
+
+            console.log('✅ [Frontend] Download button created!')
 
             chatHistory.push({
                 role: "assistant",
-                parts: [{ text: successMessage }]
+                parts: [{ text: 'Here is your PDF' }]
             })
             return
         }
 
-        console.log('💬 [Frontend] Procesando respuesta de texto...')
+        console.log('💬 [Frontend] Processing text response...')
         const botResponse = data.response.trim()
 
         typingEffect(botResponse, textElement, botMsgDiv)

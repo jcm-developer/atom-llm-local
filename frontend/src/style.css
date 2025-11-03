@@ -180,6 +180,24 @@ body.chats-active .container :where(.app-header, .suggestions) {
     white-space: pre-line;
 }
 
+/* Image in chat message stylings */
+.chats-container .message img {
+    max-width: 100%;
+    max-height: 500px;
+    width: auto;
+    height: auto;
+    border-radius: 12px;
+    margin-top: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease;
+    cursor: pointer;
+}
+
+.chats-container .message img:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
 .chats-container .bot-message {
     margin: 9px auto;
 }
@@ -322,6 +340,36 @@ body.bot-responding .prompt-form #stop-response-btn {
 .model-toggle-btn.active:hover {
     background: linear-gradient(135deg, #0264e3 0%, #7a5ae8 100%) !important;
     box-shadow: 0 0 25px rgba(29, 126, 253, 0.7) !important;
+}
+
+/* Animaciones para el modal de imagen */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes zoomIn {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 /* Responsive media query code for small screens */
